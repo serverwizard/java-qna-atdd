@@ -78,7 +78,7 @@ public class UserAcceptanceTest extends AcceptanceTest {
     private ResponseEntity<String> update(TestRestTemplate template) throws Exception {
         return template.postForEntity(String.format("/users/%d", defaultUser().getId()),
                 HtmlFormDataBuilder.urlEncodedForm()
-                .addParameter("_method", "put")
+                .put()
                 .addParameter("password", "password2")
                 .addParameter("name", "자바지기2")
                 .addParameter("email", "javajigi@slipp.net")

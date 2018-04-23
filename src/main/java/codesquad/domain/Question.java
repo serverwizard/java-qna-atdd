@@ -79,12 +79,11 @@ public class Question extends AbstractEntity implements UrlGeneratable {
         this.contents = updatingQuestion.getContents();
     }
 
-    public boolean matchBy(User loginUser) {
+    public void delete(User loginUser) throws UnAuthorizedException {
         if(!isOwner(loginUser)) {
             throw new UnAuthorizedException();
         }
         deleted = true;
-        return isDeleted();
     }
 
     public boolean isOwner(User loginUser) {

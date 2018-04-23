@@ -3,16 +3,17 @@ package codesquad.web;
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import codesquad.domain.User;
+import org.assertj.core.api.Assertions;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import support.test.AcceptanceTest;
 import support.test.HtmlFormDataBuilder;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 public class QuestionAcceptanceTest extends AcceptanceTest {
@@ -135,7 +136,7 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
         ResponseEntity<String> response =
                 template().postForEntity(question.generateUrl(),
                         HtmlFormDataBuilder.urlEncodedForm()
-                                .addParameter("_method", "put")
+                                .put()
                                 .addParameter("title", "title")
                                 .addParameter("contents", "contents")
                                 .build(), String.class);
@@ -151,7 +152,7 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
         ResponseEntity<String> response =
                 basicAuthTemplate().postForEntity(question.generateUrl(),
                         HtmlFormDataBuilder.urlEncodedForm()
-                                .addParameter("_method", "put")
+                                .put()
                                 .addParameter("title", "title")
                                 .addParameter("contents", "contents")
                                 .build(), String.class);
@@ -166,12 +167,17 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
         ResponseEntity<String> response =
                 basicAuthTemplate().postForEntity(question.generateUrl(),
                         HtmlFormDataBuilder.urlEncodedForm()
-                                .addParameter("_method", "put")
-                                .addParameter("title", "title")
-                                .addParameter("contents", "contents")
+                                .put()
+                                .addParameter("title", "title2")
+                                .addParameter("contents", "contents2")
                                 .build(), String.class);
 
         assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
+
+        Question updatedQuestion = questionRepository.findOne(question.getId());
+        assertThat(updatedQuestion.getTitle().equals("title2"), is(true));
+        assertThat(updatedQuestion.getContents().equals("contents2"), is(true));
+
         assertThat(response.getHeaders().getLocation().getPath(), is("/questions"));
     }
 
@@ -180,12 +186,10 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
     public void 질문삭제_비로그인한사용자() throws Exception {
         Question question = saveQuestionBy(defaultUser());
 
-        StringBuilder url = new StringBuilder();
-        url.append(question.generateUrl());
-        url.append("/delete");
-
         ResponseEntity<String> response =
-                template().getForEntity(url.toString(), String.class);
+                template().exchange(
+                        question.generateUrl(),
+                        HttpMethod.DELETE, new HttpEntity(new HttpHeaders()), String.class);
 
         assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
@@ -195,12 +199,10 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
         User user = findByUserId("sanjigi");
         Question question = saveQuestionBy(user);
 
-        StringBuilder url = new StringBuilder();
-        url.append(question.generateUrl());
-        url.append("/delete");
-
         ResponseEntity<String> response =
-                basicAuthTemplate().getForEntity(url.toString(), String.class);
+                basicAuthTemplate().exchange(
+                        question.generateUrl(),
+                        HttpMethod.DELETE, new HttpEntity(new HttpHeaders()), String.class);
 
         assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
@@ -210,13 +212,11 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
     public void 질문삭제_자신의글() throws Exception {
         Question question = saveQuestionBy(defaultUser());
 
-        StringBuilder url = new StringBuilder();
-        url.append(question.generateUrl());
-        url.append("/delete");
-
         ResponseEntity<String> response =
-                basicAuthTemplate().getForEntity(url.toString(), String.class);
+                basicAuthTemplate().exchange(
+                        question.generateUrl(),
+                        HttpMethod.DELETE, new HttpEntity(new HttpHeaders()), String.class);
 
-        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+        assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
     }
 }

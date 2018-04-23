@@ -41,21 +41,18 @@ public class QnaService {
         return questionRepository.findOne(id);
     }
 
-    public Question update(User loginUser, long id, Question updatedQuestion) throws UnAuthorizedException {
+    @Transactional
+    public void update(User loginUser, long id, Question updatedQuestion) throws UnAuthorizedException {
         Question question = findById(id);
         log.debug("question: {}", question);
 
         question.update(loginUser, updatedQuestion);
-        return questionRepository.save(question);
     }
 
     @Transactional
-    public void deleteQuestion(User loginUser, long questionId) throws CannotDeleteException {
+    public void deleteQuestion(User loginUser, long questionId) throws UnAuthorizedException {
         Question question = questionRepository.findOne(questionId);
-        if(!question.matchBy(loginUser)){
-            throw new CannotDeleteException("자신이 작성한 질문에 대해서만 수정/삭제가 가능합니다.");
-        }
-        questionRepository.delete(questionId);
+        question.delete(loginUser);
     }
 
     public Iterable<Question> findAll() {

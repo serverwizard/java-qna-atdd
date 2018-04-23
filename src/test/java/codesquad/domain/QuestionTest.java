@@ -50,7 +50,7 @@ public class QuestionTest {
     @Test(expected = UnAuthorizedException.class)
     public void 질문삭제_타인의글() {
         Question question = saveQuestionBy(defaultUser);
-        question.matchBy(otherUser);
+        question.delete(otherUser);
 
         assertThat(question.isDeleted()).isEqualTo(false);
     }
@@ -58,7 +58,7 @@ public class QuestionTest {
     @Test
     public void 질문삭제_자신의글() {
         Question question = saveQuestionBy(defaultUser);
-        question.matchBy(defaultUser);
+        question.delete(defaultUser);
 
         assertThat(question.isDeleted()).isEqualTo(true);
     }

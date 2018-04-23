@@ -68,14 +68,10 @@ public class QuestionController {
         return "redirect:/questions";
     }
 
-    @GetMapping("/{id}/delete")
-    public String delete(@LoginUser User loginUser, @PathVariable long id) {
-        try {
-            qnaService.deleteQuestion(loginUser, id);
-        } catch (CannotDeleteException e) {
-            log.error("[ERROR] " + e.getMessage());
-            throw new UnAuthorizedException(e.getMessage());
-        }
+    @DeleteMapping("/{id}")
+    public String delete(@LoginUser User loginUser, @PathVariable long id) throws UnAuthorizedException {
+        qnaService.deleteQuestion(loginUser, id);
+
         return "redirect:/questions";
     }
 }
